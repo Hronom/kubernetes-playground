@@ -1,0 +1,28 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: temporal-custom-frontend
+spec:
+  hosts:
+    # We need to add an internal host to apply rules to the internal communications, e.g., service to service
+    # More info [here](https://github.com/istio/istio/issues/19835#issuecomment-1902725767)
+    - temporal-custom-frontend.{{ .Release.Namespace }}.svc.cluster.local
+  gateways:
+    # We need to add `mesh` that is reserved word, so the rule will apply to internal communications too, e.g., service to service
+    # More info [here](https://github.com/istio/istio/issues/19835#issuecomment-1902725767)
+    - mesh
+  http:
+    - match:
+        - port: 7233
+      route:
+        - destination:
+            host: temporal-custom-frontend.{{ .Release.Namespace }}.svc.cluster.local
+            port:
+              number: 7233
+    - match:
+        - port: 7243
+      route:
+        - destination:
+            host: temporal-custom-frontend.{{ .Release.Namespace }}.svc.cluster.local
+            port:
+              number: 7243

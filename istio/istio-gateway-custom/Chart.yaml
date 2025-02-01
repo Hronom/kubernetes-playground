@@ -1,0 +1,9 @@
+apiVersion: v2
+name: istio-gateway-custom
+description: Chart for custom service
+version: 1.0.0
+
+dependencies:
+  - name: gateway
+    version: "1.24.0"
+    repository: "https://istio-release.storage.googleapis.com/charts"

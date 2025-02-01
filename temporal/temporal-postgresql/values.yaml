@@ -1,0 +1,11 @@
+postgresql:
+  global:
+    postgresql:
+      auth:
+        username: "admin"
+        password: "admin"
+        postgresPassword: "admin"
+        replicationPassword: "admin"
+  passwordUpdateJob:
+    enabled: false
+    backoffLimit: 5
