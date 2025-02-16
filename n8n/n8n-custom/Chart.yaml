@@ -1,0 +1,4 @@
+apiVersion: v2
+name: n8n-custom
+description: Chart for custom service
+version: 1.0.0

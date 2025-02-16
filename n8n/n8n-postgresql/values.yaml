@@ -1,0 +1,17 @@
+postgresql:
+  global:
+    postgresql:
+      auth:
+        username: "admin"
+        password: "admin"
+        postgresPassword: "admin"
+        replicationPassword: "admin"
+  passwordUpdateJob:
+    enabled: false
+    backoffLimit: 5
+  primary:
+    initdb:
+      scripts:
+        01_init.sql: |
+          CREATE DATABASE n8n;
+          GRANT ALL PRIVILEGES ON DATABASE n8n TO admin;

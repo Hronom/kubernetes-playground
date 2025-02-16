@@ -11,6 +11,14 @@
 # Intro
 Commands and helm charts are ready to use in Kubernetes that running inside Docker Desktop.
 
+# Add new application
+Add custom helm chart.
+
+If it has dependencies, run:
+```shell
+helm dependency build
+```
+
 # Install applications
 ## Install base applications
 ### Install Istio
@@ -62,6 +70,27 @@ helm upgrade --dependency-update --install temporal-custom ./temporal/temporal-c
 On Linux add inside `/etc/hosts` record:
 ```
 127.0.0.1 temporal.localhost
+```
+
+On other systems check where it should be added=)
+
+### Install n8n
+```shell
+kubectl create namespace n8n
+kubectl label namespaces n8n istio-injection=enabled --overwrite=true
+```
+
+```shell
+helm upgrade --dependency-update --install n8n-postgresql ./n8n/n8n-postgresql --namespace n8n
+```
+
+```shell
+helm upgrade --dependency-update --install n8n-custom ./n8n/n8n-custom --namespace n8n
+```
+
+On Linux add inside `/etc/hosts` record:
+```
+127.0.0.1 n8n.localhost
 ```
 
 On other systems check where it should be added=)

@@ -1,0 +1,11 @@
+{{- if .Values.debug }}
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: {{ .Release.Name }}-access-logs-namespace
+  namespace: {{ .Release.Namespace }}
+spec:
+  accessLogging:
+    - providers:
+        - name: envoy
+{{ end }}
