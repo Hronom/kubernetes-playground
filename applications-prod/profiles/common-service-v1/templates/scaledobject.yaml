@@ -1,0 +1,46 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ .Values.name }}
+  annotations:
+    autoscaling.keda.sh/paused: "false"
+spec:
+  # Inspired by: https://stackoverflow.com/a/77356979
+  # Relates to: https://github.com/kedacore/keda/issues/595
+  scaleTargetRef:
+    apiVersion: argoproj.io/v1alpha1
+    kind: Rollout
+    name: {{ .Values.name }}
+  pollingInterval: 30
+  cooldownPeriod: 10
+  minReplicaCount: {{ .Values.autoscaler.minReplicas }}
+  maxReplicaCount: {{ .Values.autoscaler.maxReplicas }}
+  advanced:
+    horizontalPodAutoscalerConfig:
+      name: {{ .Values.name }}
+      behavior:
+        scaleUp:
+          stabilizationWindowSeconds: {{ .Values.autoscaler.horizontal.behavior.scaleUp.stabilizationWindowSeconds }}
+          policies:
+            - type: Percent
+              value: 100
+              periodSeconds: 15
+            - type: Pods
+              value: 1
+              periodSeconds: 15
+          selectPolicy: Max
+        scaleDown:
+          stabilizationWindowSeconds: {{ .Values.autoscaler.horizontal.behavior.scaleDown.stabilizationWindowSeconds }}
+          policies:
+            - type: Percent
+              value: 50
+              periodSeconds: 15
+  triggers:
+    {{- if .Values.autoscaler.horizontal.triggers.cpu.enabled }}
+    - name: cpu
+      type: cpu
+      metricType: Utilization
+      metadata:
+        value: "{{ .Values.autoscaler.horizontal.triggers.cpu.averageUtilization }}"
+        containerName: {{ .Values.name }}
+    {{- end }}

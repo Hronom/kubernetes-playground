@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: temporal-custom-web
+spec:
+  hosts:
+    - {{ .Values.host }}
+  gateways:
+    - istio-gateway-ingress/istio-gateway-ingress-main
+  http:
+    - route:
+        - destination:
+            host: temporal-web.{{ .Release.Namespace }}.svc.cluster.local
+            port:
+              number: 8080

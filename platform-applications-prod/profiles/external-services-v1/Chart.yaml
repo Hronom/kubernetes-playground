@@ -1,0 +1,4 @@
+apiVersion: v2
+name: external-services-v1
+description: Technical chart that helps to allow external services by different protocols
+version: 1.0.0

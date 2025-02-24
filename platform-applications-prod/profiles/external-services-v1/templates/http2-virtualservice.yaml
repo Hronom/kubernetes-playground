@@ -1,0 +1,18 @@
+# Inspired by https://stackoverflow.com/a/57849142
+{{- $name := .Values.name | default dict }}
+{{- range $val := .Values.externalServices.http2 }}
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: {{ $name }}-http2-{{ $val.host | replace "*" "x" }}
+spec:
+  hosts:
+    - {{ $val.host | quote }}
+  http:
+    - timeout: {{ $val.timeout | default "30s" }}
+      route:
+        - destination:
+            host: {{ $val.host | quote }}
+          weight: 100
+---
+{{- end }}

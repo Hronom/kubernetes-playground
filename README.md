@@ -1,17 +1,74 @@
 <!-- TOC -->
 * [Intro](#intro)
-* [Install applications](#install-applications)
-  * [Install base applications](#install-base-applications)
-    * [Install Istio](#install-istio)
-    * [Install Istio Ingress](#install-istio-ingress)
-  * [Install extra applications](#install-extra-applications)
-    * [Install Temporal](#install-temporal)
+* [platform-infra](#platform-infra)
+  * [01 external-secrets](#01-external-secrets)
+  * [02 istio](#02-istio)
+  * [03 argo-cd](#03-argo-cd)
+* [platform-applications-prod](#platform-applications-prod)
+  * [Argo Rollouts](#argo-rollouts)
+  * [Temporal](#temporal)
+  * [n8n](#n8n)
+* [applications-prod](#applications-prod)
 <!-- TOC -->
 
 # Intro
-Commands and helm charts are ready to use in Kubernetes that running inside Docker Desktop.
+This repo shows GitOps, IaC approach to managing runtime environment using Argo CD.
+Also, we use Istio for secure(strict mTLS) service to service communications.
 
-# Add new application
+To run, you must have the latest version of Docker Desktop with Kubernetes enabled.
+
+Repo structure:
+1. `platform-infra` - contains base infrastructure managed by terraform to prepare and configure base for runtime environment
+2. `platform-applications-prod` - this is a GitOps repo used by Argo CD to sync state for `prod` platform applications
+3. `applications-prod` - this is a GitOps repo used by Argo CD to sync state for `prod` applications
+
+# platform-infra
+This folder contains terraform scripts with basic setup for the platform based on Kubernetes and docker-desktop.
+
+## 01 external-secrets
+```shell
+cd platform-infra/external-secrets
+terraform init --backend-config="path=terraform-prod.tfstate" --reconfigure
+```
+
+```shell
+cd platform-infra/external-secrets
+terraform apply --var-file=inputs-prod.tfvars -auto-approve
+```
+
+## 02 istio
+```shell
+cd platform-infra/istio
+terraform init --backend-config="path=terraform-prod.tfstate" --reconfigure
+```
+
+```shell
+cd platform-infra/istio
+terraform apply --var-file=inputs-prod.tfvars -auto-approve
+```
+
+## 03 argo-cd
+```shell
+cd platform-infra/argo-cd
+terraform init --backend-config="path=terraform-prod.tfstate" --reconfigure
+```
+
+```shell
+cd platform-infra/argo-cd
+terraform apply --var-file=inputs-prod.tfvars -auto-approve
+```
+
+Username: `admin`
+Password: `admin`
+
+On Linux add inside `/etc/hosts` record:
+```
+127.0.0.1 argo-cd.prod.in.localhost
+```
+
+# platform-applications-prod
+This is a GitOps repo used by Argo CD to sync state for prod platform applications.
+
 Add custom helm chart.
 
 If it has dependencies, run:
@@ -19,78 +76,27 @@ If it has dependencies, run:
 helm dependency build
 ```
 
-# Install applications
-## Install base applications
-### Install Istio
-
-```shell
-kubectl create namespace istio-system
-```
-
-```shell
-helm upgrade --dependency-update --install istio-base-custom ./istio/istio-base-custom --namespace istio-system
-```
-
-```shell
-helm upgrade --dependency-update --install istio-istiod-custom ./istio/istio-istiod-custom --namespace istio-system
-```
-
-```shell
-helm upgrade --dependency-update --install istio-istiod-config-custom ./istio/istio-istiod-config-custom --namespace istio-system
-```
-
-### Install Istio Ingress
-```shell
-kubectl create namespace istio-ingress
-```
-
-```shell
-helm upgrade --dependency-update --install istio-gateway-custom ./istio/istio-gateway-custom --namespace istio-ingress
-```
-
-```shell
-helm upgrade --dependency-update --install istio-gateway-config-custom ./istio/istio-gateway-config-custom --namespace istio-ingress
-```
-
-## Install extra applications
-### Install Temporal
-```shell
-kubectl create namespace temporal
-kubectl label namespaces temporal istio-injection=enabled --overwrite=true
-```
-
-```shell
-helm upgrade --dependency-update --install temporal-postgresql ./temporal/temporal-postgresql --namespace temporal
-```
-
-```shell
-helm upgrade --dependency-update --install temporal-custom ./temporal/temporal-custom --namespace temporal
-```
-
+## Argo Rollouts
 On Linux add inside `/etc/hosts` record:
 ```
-127.0.0.1 temporal.localhost
+127.0.0.1 argo-rollouts.prod.in.localhost
+```
+
+## Temporal
+On Linux add inside `/etc/hosts` record:
+```
+127.0.0.1 temporal.prod.in.localhost
 ```
 
 On other systems check where it should be added=)
 
-### Install n8n
-```shell
-kubectl create namespace n8n
-kubectl label namespaces n8n istio-injection=enabled --overwrite=true
-```
-
-```shell
-helm upgrade --dependency-update --install n8n-postgresql ./n8n/n8n-postgresql --namespace n8n
-```
-
-```shell
-helm upgrade --dependency-update --install n8n-custom ./n8n/n8n-custom --namespace n8n
-```
-
+## n8n
 On Linux add inside `/etc/hosts` record:
 ```
-127.0.0.1 n8n.localhost
+127.0.0.1 n8n.prod.in.localhost
 ```
 
 On other systems check where it should be added=)
+
+# applications-prod
+This is a GitOps repo used by Argo CD to sync state for prod applications.

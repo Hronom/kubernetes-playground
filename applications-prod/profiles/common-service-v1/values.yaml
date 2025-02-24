@@ -1,0 +1,246 @@
+# -- Service name in kebab-case
+name: ""
+# -- Environment
+environment: ""
+
+# -- App profile
+profile: ""
+# -- Link to the app deployment
+deployLink: ""
+
+# -- Host for docker repository
+dockerRepositoryHost: "docker.io"
+# -- Docker repository
+dockerRepository: ""
+# -- Docker image version
+version: ""
+
+metadata:
+  owner:
+    team:
+      # -- Owner team id
+      id: ""
+      # -- Owner team name
+      name: ""
+
+# -- Urls used by istio gateways to route traffic to this service
+hosts: []
+# -- Istio gateways from that service expect to receive traffic. Gateways should be referred to by istio-gateway-ingress/<gateway name>
+gateways: []
+# -- HTTP list of matchers that will be used to route traffic to this service
+httpMatch:
+  # -- URI to match values are case-sensitive. More info about [possible approaches](https://istio.io/latest/docs/reference/config/networking/virtual-service/#StringMatch)
+  - uri:
+      # -- HTTP prefix that will be used to route traffic to this service. Useful then several services use one host
+      prefix: /
+
+autoscaler:
+  # -- Max replicas count
+  maxReplicas: 4
+  # -- Min replicas count
+  minReplicas: 2
+  horizontal:
+    triggers:
+      cpu:
+        # -- Enable CPU horizontal autoscaler
+        enabled: true
+        # -- Average utilization of the cpu. If goes above value mentioned here - scale up
+        averageUtilization: 80
+      istioRequestsPerSecond:
+        # -- Enable istioRequestsPerSecond horizontal autoscaler
+        enabled: false
+        # -- Average utilization of the istioRequestsPerSecond. If goes above value mentioned here - scale up.
+        averageValue: "50"
+    behavior:
+      scaleUp:
+        # -- The [stabilization window](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#stabilization-window) is used to restrict the flapping of replica count when the metrics used for scaling keep fluctuating
+        stabilizationWindowSeconds: 5
+      scaleDown:
+        # -- The [stabilization window](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#stabilization-window) is used to restrict the flapping of replica count when the metrics used for scaling keep fluctuating
+        stabilizationWindowSeconds: 300
+
+# -- Timeout for this service
+timeout: "30s"
+
+telemetry:
+  prometheus:
+    # -- Enable scraping of metrics from app that exposed in prometheus way
+    enabled: false
+    # -- Prometheus metrics endpoint path
+    path: "/actuator/prometheus"
+    # -- Prometheus metrics endpoint port
+    port: 3000
+
+# -- Duration in seconds that the system should wait before destroying a pod after it has been marked for deletion. This time period is set to allow the pod to handle the SIGTERM signal and terminate gracefully. It might be useful in cases where the services running in the pod need to complete certain operations or release resources before closing. For example, a web server pod might need to finish serving any pending requests.
+terminationGracePeriodSeconds: 60
+
+service:
+  # -- HTTP main port for service to expose for other services
+  httpMainPort: 80
+  # -- Additional ports for service to expose for other services
+  # @default -- `[]` (See [values.yaml])
+  additionalPorts: []
+  #  - name: tcp-jgroups
+  #    port: 7601
+  #    targetContainerPortName: tcp-jgroups
+
+headlessService:
+  enabled: false
+  # -- Additional ports for headless service to expose for other services
+  # @default -- `[]` (See [values.yaml])
+  additionalPorts: []
+  #  - name: tcp-jgroups
+  #    port: 7601
+  #    targetContainerPortName: tcp-jgroups
+
+container:
+  # -- HTTP main port that application listens to
+  httpMainPort: 3000
+  # -- Additional ports for container to expose
+  # @default -- `[]` (See [values.yaml])
+  additionalPorts: []
+  #  - name: tcp-jgroups
+  #    containerPort: 7600
+  #    protocol: TCP
+  # -- It's a way for Kubernetes to know when a Pod is ready to start accepting traffic
+  # @default -- `{}` (See [values.yaml])
+  readinessProbe: {}
+  #  httpGet:
+  #    path: /
+  #    port: http-main-port
+  #  initialDelaySeconds: 5
+  #  failureThreshold: 3
+  #  periodSeconds: 5
+  #  timeoutSeconds: 1
+  # -- This allows Kubernetes to know whether the application within the container is still working
+  # @default -- `{}` (See [values.yaml])
+  livenessProbe: {}
+  #  httpGet:
+  #    path: /
+  #    port: http-main-port
+  #  failureThreshold: 3
+  #  periodSeconds: 5
+  #  timeoutSeconds: 1
+  # -- It is intended to be used to check if an application within a Docker container has started. If the startup probe fails, Kubernetes will kill the container, and the container is subject to the pod's restart policy
+  # @default -- `{}` (See [values.yaml])
+  startupProbe: {}
+  #  httpGet:
+  #    path: /
+  #    port: http-main-port
+  #  failureThreshold: 30
+  #  periodSeconds: 5
+  #  timeoutSeconds: 1
+  securityContext:
+    # -- As what user to run
+    runAsUser: 0
+    # -- What user group to use
+    runAsGroup: 0
+  # -- Environment variables
+  # @default -- `{}` (See [values.yaml])
+  env: {}
+  #  ENV: staging
+  # -- Secrets that passed through environment variables
+  # @default -- `[]` (See [values.yaml])
+  envSecret: []
+  #   - name: "foo"
+  #     key: "/staging/foo"
+  ## Resource Management for Pods and Containers
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  resources:
+    requests:
+      # -- How much memory to request initially. If the container goes above requested resources, it will be highly likely evicted. [Memory resource units](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory)
+      memory: "500Mi"
+      # -- How much cpu to request initially. If the container goes above requested resources, it will be highly likely evicted. [CPU resource units](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-cpu)
+      cpu: "250m"
+      # -- How much storage to request initially. If the container goes above requested resources, it will be highly likely evicted. [Local ephemeral storage](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#local-ephemeral-storage)
+      ephemeralStorage: "1Gi"
+    limits:
+      # -- Max amount of memory that a container can use. If the container goes above the limit - it will be killed. [Memory resource units](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory)
+      memory: "500Mi"
+      # -- Max amount of cpu that a container can use. If the container goes above the limit - it will be killed. [CPU resource units](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-cpu)
+      cpu: "250m"
+      # -- Max amount of storage that a container can use. If the container goes above the limit - it will be killed. [Local ephemeral storage](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-cpu)
+      ephemeralStorage: "1Gi"
+  # -- The command that you define in the configuration file override the default command provided by the container image. [Define a Command and Arguments for a Container](https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container)
+  command: []
+  # -- The arguments that you define in the configuration file override the default arguments provided by the container image. If you define args, but do not define a command, the default command is used with your new arguments. [Define a Command and Arguments for a Container](https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container)
+  args: []
+
+authorizations:
+  # -- Rules about what service can access what endpoints
+  # @default -- `[]` (See [values.yaml])
+  rules: []
+  #  - allowPrincipals:
+  #      - istio-gateway-ingress/istio-gateway-ingress-main
+  #    paths:
+  #      - /*
+  #    notPaths:
+  #      - /metrics
+
+traffic:
+  # -- Newly created pod of service remains in warmup mode starting from its creation time for the duration of this window and Istio progressively increases amount of traffic for that pod instead of sending proportional amount of traffic.
+  warmupDurationSeconds: 30
+  interception:
+    excludeInboundPorts:
+      # -- Enables the exclusion of inbound ports. The Istio sidecar will not intercept these ports. This feature is useful for handling problematic third-party dependencies like Redis.
+      enabled: false
+      # -- List of ports to exclude
+      list: []
+    excludeOutboundPorts:
+      # -- Enables the exclusion of outbound ports. The Istio sidecar will not intercept these ports. This feature is useful for handling problematic third-party dependencies like Redis.
+      enabled: false
+      # -- List of ports to exclude
+      list: []
+
+# -- Allow service to access ANY other external(outside Kubernetes) service
+allowAnyExternalServices: false
+
+kubernetes:
+  api:
+    clusterRole:
+      # -- List of cluster role rules
+      rules: []
+      #  - apiGroups:
+      #      - ""
+      #    resources:
+      #      - events
+      #      - pods
+      #      - pods/log
+      #    verbs:
+      #      - get
+      #      - list
+      #      - watch
+
+rollout:
+  # -- The ability to dynamically scale the stable ReplicaSet, so old instances will shutdown as soon as new pod starts and becomes healthy. [Dynamic Stable Scale (with Traffic Routing)](https://argo-rollouts.readthedocs.io/en/stable/features/canary/#dynamic-stable-scale-with-traffic-routing)
+  dynamicStableScale: false
+  # -- List of steps the controller uses to manipulate the ReplicaSets. [Overview](https://argo-rollouts.readthedocs.io/en/stable/features/canary/#overview)
+  steps:
+    - setCanaryScale:
+        weight: 100
+    - setWeight: 5
+    - pause:
+        duration: 30s
+    - setWeight: 20
+    - pause:
+        duration: 30s
+    - setWeight: 40
+    - pause:
+        duration: 30s
+    - setWeight: 60
+    - pause:
+        duration: 30s
+    - setWeight: 80
+    - pause:
+        duration: 30s
+    - setWeight: 100
+  # -- The maximum time in seconds in which a rollout must make progress during an update, before it is considered to be failed. Note that progress will not be estimated during the time a rollout is paused.
+  progressDeadlineSeconds: 3600
+  # -- [The rollback window](https://argo-rollouts.readthedocs.io/en/stable/features/rollback/) provides a way to fast track deployments to previously deployed versions.
+  rollbackWindowRevisions: 3
+  # -- The number of old stacks definitions to retain
+  revisionHistoryLimit: 10
+  # -- Adds a delay in seconds before scaling down the previous stack
+  scaleDownDelaySeconds: 300 # 5 min
+  # -- Add a delay in seconds before scaling down the new stack if update is aborted
+  abortScaleDownDelaySeconds: 30

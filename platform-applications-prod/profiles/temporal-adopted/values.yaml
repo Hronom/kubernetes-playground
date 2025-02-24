@@ -1,0 +1,130 @@
+debug: false
+
+host: ''
+
+postgresql:
+  global:
+    postgresql:
+      auth:
+        username: "admin"
+        password: "admin"
+        postgresPassword: "admin"
+        replicationPassword: "admin"
+  passwordUpdateJob:
+    enabled: false
+    backoffLimit: 5
+
+temporal:
+  serviceAccount:
+    create: true
+  server:
+    replicaCount: 1
+    config:
+      namespaces:
+        create: true
+        namespace:
+          - name: default
+            retention: 3d
+          - name: test
+            retention: 1d
+      persistence:
+        default:
+          driver: "sql"
+          sql:
+            driver: "postgres12"
+            maxConns: 20
+            maxConnLifetime: "1h"
+            host: temporal-postgresql.temporal.svc.cluster.local
+            port: 5432
+            database: temporal
+            user: admin
+            password: admin
+            tls:
+              enabled: false
+              enableHostVerification: false
+        visibility:
+          driver: "sql"
+          sql:
+            driver: "postgres12"
+            maxConns: 20
+            maxConnLifetime: "1h"
+            host: temporal-postgresql.temporal.svc.cluster.local
+            port: 5432
+            database: temporal_visibility
+            user: admin
+            password: admin
+            tls:
+              enabled: false
+              enableHostVerification: false
+    frontend:
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+    history:
+      resources:
+        limits:
+          cpu: 100m
+          memory: 256Mi
+        requests:
+          cpu: 100m
+          memory: 256Mi
+    matching:
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+    worker:
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+
+  admintools:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  web:
+    enabled: true
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  cassandra:
+    enabled: false
+  mysql:
+    enabled: false
+  postgresql:
+    enabled: true
+  prometheus:
+    enabled: false
+  grafana:
+    enabled: false
+  elasticsearch:
+    enabled: false
+
+  schema:
+    createDatabase:
+      enabled: true
+    setup:
+      enabled: true
+    update:
+      enabled: true

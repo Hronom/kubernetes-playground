@@ -1,0 +1,19 @@
+# Inspired by https://stackoverflow.com/a/57849142
+{{- $name := .Values.name | default dict }}
+{{- range $val := .Values.externalServices.http }}
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: {{ $name }}-http-{{ $val.host | replace "*" "x" }}
+spec:
+  hosts:
+    - {{ $val.host | quote }}
+  location: MESH_EXTERNAL
+  ports:
+    - name: http
+      number: {{ $val.port | default 80 }}
+      protocol: http
+  resolution: {{ $val.resolution | default "DNS" }}
+---
+{{- end }}
+

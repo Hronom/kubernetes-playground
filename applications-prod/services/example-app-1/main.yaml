@@ -1,0 +1,75 @@
+name: example-app-1
+profile: common-service-v1
+deployLink: http://example-app-1.localhost/swagger-ui/index.html
+dockerRepository: hronom/simple-rest-api
+version: latest
+metadata:
+  owner:
+    team:
+      id: hronom
+      name: Hronom
+hosts:
+  - example-app-1.localhost
+gateways:
+  - istio-gateway-ingress/istio-gateway-ingress-main
+httpMatch:
+  - uri:
+      prefix: /
+autoscaler:
+  maxReplicas: 1
+  minReplicas: 1
+  horizontal:
+    triggers:
+      cpu:
+        enabled: true
+        averageUtilization: 80
+      istioRequestsPerSecond:
+        enabled: false
+        averageValue: 3000
+    behavior:
+      scaleUp:
+        stabilizationWindowSeconds: 5
+      scaleDown:
+        stabilizationWindowSeconds: 15
+timeout: 1800s
+container:
+  httpMainPort: 8080
+  readinessProbe:
+    httpGet:
+      path: /actuator/health/readiness
+      port: http-main-port
+    initialDelaySeconds: 1
+    failureThreshold: 15
+    periodSeconds: 1
+    timeoutSeconds: 1
+  livenessProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: http-main-port
+    failureThreshold: 3
+    periodSeconds: 5
+    timeoutSeconds: 1
+  startupProbe:
+    httpGet:
+      path: /actuator/health
+      port: http-main-port
+    failureThreshold: 30
+    periodSeconds: 1
+    timeoutSeconds: 1
+  env:
+    test1: test1
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 512m
+    limits:
+      memory: 1024Mi
+      cpu: 1024m
+authorizations:
+  rules:
+    - allowPrincipals:
+        - istio-gateway-ingress/istio-gateway-ingress-main
+      paths:
+        - /*
+rollout:
+  scaleDownDelaySeconds: 60

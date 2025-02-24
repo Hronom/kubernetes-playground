@@ -1,0 +1,27 @@
+name: argo-rollouts
+profile: argo-rollouts-adopted
+namespace: argo-rollouts
+istio-injection: enabled
+
+host: 'argo-rollouts.prod.in.localhost'
+
+argo-rollouts:
+  podLabels:
+    env: prod
+    teamId: hronom
+  dashboard:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+  controller:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 500m
+        memory: 512Mi

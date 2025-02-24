@@ -1,0 +1,36 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: {{ .Values.name }}
+spec:
+  hosts:
+    # We need to add an internal host to apply rules to the internal communications, e.g., service to service
+    # More info [here](https://github.com/istio/istio/issues/19835#issuecomment-1902725767)
+    - {{ .Values.name }}.{{ .Release.Namespace }}.svc.cluster.local
+  {{- if ne (len .Values.hosts) 0 }}
+  {{- toYaml .Values.hosts | nindent 4 }}
+  {{- end }}
+  gateways:
+    # We need to add `mesh` that is reserved word, so the rule will apply to internal communications too, e.g., service to service
+    # More info [here](https://github.com/istio/istio/issues/19835#issuecomment-1902725767)
+    - mesh
+  {{- if ne (len .Values.gateways) 0 }}
+  {{- toYaml .Values.gateways | nindent 4 }}
+  {{- end }}
+  http:
+    - name: primary
+      timeout: {{ .Values.timeout }}
+      match: {{- toYaml .Values.httpMatch | nindent 8 }}
+      route:
+        - destination:
+            host: {{ .Values.name }}.{{ .Release.Namespace }}.svc.cluster.local
+            subset: stable
+            port:
+              number: 80
+          weight: 100
+        - destination:
+            host: {{ .Values.name }}.{{ .Release.Namespace }}.svc.cluster.local
+            subset: canary
+            port:
+              number: 80
+          weight: 0

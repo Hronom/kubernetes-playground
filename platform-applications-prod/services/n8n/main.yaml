@@ -1,0 +1,6 @@
+name: n8n
+profile: n8n-adopted
+namespace: n8n
+istio-injection: enabled
+
+host: 'n8n.prod.in.localhost'

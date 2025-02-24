@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: n8n
+spec:
+  hosts:
+    - {{ .Values.host }}
+  gateways:
+    - istio-gateway-ingress/istio-gateway-ingress-main
+  http:
+    - route:
+        - destination:
+            host: n8n.{{ .Release.Namespace }}.svc.cluster.local
+            port:
+              number: 5678

@@ -1,0 +1,17 @@
+host: ''
+
+argo-rollouts:
+  notifications:
+    secret:
+      create: true
+  dashboard:
+    enabled: true
+    service:
+      portName: http-dashboard
+  controller:
+    extraArgs:
+      - --logformat
+      - json
+      - --loglevel
+      - warn
+      - --self-service-notification-enabled

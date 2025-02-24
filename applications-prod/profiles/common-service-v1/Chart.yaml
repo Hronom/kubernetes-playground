@@ -1,0 +1,4 @@
+apiVersion: v2
+name: common-service-v1
+description: Chart for common service
+version: 1.0.0

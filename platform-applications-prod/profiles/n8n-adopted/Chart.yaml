@@ -1,0 +1,9 @@
+apiVersion: v2
+name: n8n-adopted
+description: Chart for adopted service
+version: 1.0.0
+
+dependencies:
+  - name: postgresql
+    version: "16.4.5"
+    repository: "https://charts.bitnami.com/bitnami"

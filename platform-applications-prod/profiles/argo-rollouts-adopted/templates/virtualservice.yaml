@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: argo-rollouts-dashboard
+spec:
+  hosts:
+    - {{ .Values.host }}
+  gateways:
+    - istio-gateway-ingress/istio-gateway-ingress-main
+  http:
+    - route:
+        - destination:
+            host: argo-rollouts-dashboard
+            port:
+              number: 3100
