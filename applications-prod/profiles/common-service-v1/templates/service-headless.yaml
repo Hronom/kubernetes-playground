@@ -1,0 +1,22 @@
+# Inspired by https://stackoverflow.com/a/70291244 needed for Infinispan.
+# More info https://kubernetes.io/docs/concepts/services-networking/service/#headless-services
+# Needed for self-calls, specifically for in-memory data grids like Infinispan, Hazelcast etc.
+{{- if .Values.headlessService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.name }}-headless
+  labels:
+    app: {{ .Values.name }}
+    service: {{ .Values.name }}-headless
+spec:
+  clusterIP: "None"
+  ports:
+    {{- range $additionalPort := .Values.headlessService.additionalPorts }}
+    - name: {{ $additionalPort.name }}
+      port: {{ $additionalPort.port }}
+      targetPort: {{ $additionalPort.targetContainerPortName }}
+    {{- end }}
+  selector:
+    app: {{ .Values.name }}
+{{- end }}

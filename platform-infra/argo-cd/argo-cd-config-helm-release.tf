@@ -188,7 +188,7 @@ resource "helm_release" "argo_cd_applications_config" {
                 "git" : {
                   "files" : [
                     {
-                      "path" : "services/*/main.yaml"
+                      "path" : "applications-${var.environment}/services/*/main.yaml"
                     },
                   ]
                   "repoURL" : "https://github.com/Hronom/kubernetes-playground.git"
@@ -203,6 +203,9 @@ resource "helm_release" "argo_cd_applications_config" {
                   "originalName" : "{{ name }}"
                   "sourceCodeRepositoryUrl" : "{{ sourceCode.repositoryUrl }}"
                   "sourceCodeCommitSha" : "{{ sourceCode.commitSha }}"
+                },
+                "labels": {
+                  "teamId": "{{ metadata.owner.team.id }}"
                 }
               }
               "spec" : {

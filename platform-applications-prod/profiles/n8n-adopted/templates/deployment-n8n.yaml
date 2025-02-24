@@ -47,9 +47,9 @@ spec:
             - name: N8N_PORT
               value: "5678"
             - name: N8N_HOST
-              value: n8n.localhost
+              value: n8n.prod.in.localhost
             - name: WEBHOOK_URL
-              value: https://n8n.localhost
+              value: http://n8n.prod.in.localhost
             - name: N8N_SECURE_COOKIE
               value: "false"
           image: n8nio/n8n

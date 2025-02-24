@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: {{ .Values.name }}
+spec:
+  host: {{ .Values.name }}.{{ .Release.Namespace }}.svc.cluster.local
+  trafficPolicy:
+    loadBalancer:
+      # https://istio.io/latest/docs/reference/config/networking/destination-rule/#LoadBalancerSettings-SimpleLB
+      simple: LEAST_REQUEST
+      # https://istio.io/latest/docs/reference/config/networking/destination-rule/#LoadBalancerSettings
+      # It works for new pod's coming up because of restart or Horizontal Pods Autoscaler
+      # https://github.com/istio/istio/issues/21228#issuecomment-1256833886
+      warmupDurationSecs: "{{ .Values.traffic.warmupDurationSeconds }}s"
+  subsets:
+    - name: stable
+      labels:
+        app: {{ .Values.name }}
+    - name: canary
+      labels:
+        app: {{ .Values.name }}

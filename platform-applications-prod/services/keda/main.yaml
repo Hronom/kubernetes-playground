@@ -1,0 +1,6 @@
+name: keda
+profile: keda-adopted
+namespace: keda
+istio-injection: enabled
+
+#keda:

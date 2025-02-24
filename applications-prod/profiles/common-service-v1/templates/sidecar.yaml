@@ -1,0 +1,14 @@
+{{- if or .Values.allowAnyExternalServices }}
+apiVersion: networking.istio.io/v1
+kind: Sidecar
+metadata:
+  name: {{ .Values.name }}
+spec:
+  workloadSelector:
+    labels:
+      app: {{ .Values.name }}
+  {{- if .Values.allowAnyExternalServices }}
+  outboundTrafficPolicy:
+    mode: ALLOW_ANY
+  {{- end }}
+{{- end }}

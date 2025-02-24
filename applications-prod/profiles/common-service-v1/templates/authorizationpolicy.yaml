@@ -1,0 +1,51 @@
+# Inspired by https://github.com/salesforce/helm-starter-istio/blob/master/auth-policy/templates/authorizationPolicy.yaml
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ .Values.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  action: ALLOW
+  rules:
+    {{- if or .Values.headlessService.enabled }}
+    # Needed for self-calls, specifically for in-memory data grids like Infinispan, Hazelcast etc.
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/{{ .Release.Namespace }}/sa/{{ .Values.name }}"
+      to:
+        - operation:
+            ports:
+              {{- range $additionalPort := .Values.headlessService.additionalPorts }}
+              - "{{ $additionalPort.port }}"
+              {{- end }}
+    {{- end }}
+    {{- range $rule := .Values.authorizations.rules }}
+    - from:
+      - source:
+          principals:
+          {{- range $principal := $rule.allowPrincipals}}
+          {{- if contains "/" $principal }}
+          {{- $splits := split "/" $principal }}
+            - {{ (print "cluster.local/ns/" $splits._0 "/sa/" $splits._1) | quote }}
+          {{- else }}
+            - {{ (print "cluster.local/ns/" $.Release.Namespace "/sa/" $principal) | quote }}
+          {{- end }}
+          {{- end }}
+      {{- if $rule.paths }}
+      to:
+      - operation:
+          paths:
+          {{- range $rule.paths }}
+            - {{.}}
+          {{- end }}
+          {{- if $rule.notPaths }}
+          notPaths:
+          {{- range $rule.notPaths }}
+            - {{.}}
+          {{- end }}
+          {{- end }}
+      {{ end }}
+    {{- end }}

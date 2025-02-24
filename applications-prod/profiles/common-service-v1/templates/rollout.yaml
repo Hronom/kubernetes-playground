@@ -1,0 +1,135 @@
+{{- $values := .Values | default dict }}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ .Values.name }}
+spec:
+  progressDeadlineSeconds: {{ .Values.rollout.progressDeadlineSeconds }}
+  progressDeadlineAbort: true
+  rollbackWindow:
+    revisions: {{ .Values.rollout.rollbackWindowRevisions }}
+  strategy:
+    canary:
+      {{- if .Values.rollout.dynamicStableScale }}
+      dynamicStableScale: {{ .Values.rollout.dynamicStableScale }}
+      {{ end }}
+      analysis:
+        templates:
+          - templateName: {{ .Values.name }}
+        startingStep: 2 # delay starting analysis run until setWeight: 40%
+        args:
+          - name: service-name
+            value: {{ .Values.name }}.{{ .Release.Namespace }}.svc.cluster.local
+      canaryMetadata:
+        annotations:
+          role: canary
+        labels:
+          role: canary
+      stableMetadata:
+        annotations:
+          role: stable
+        labels:
+          role: stable
+      maxSurge: 100%
+      maxUnavailable: 0%
+      {{- if not .Values.rollout.dynamicStableScale }}
+      scaleDownDelaySeconds: {{ .Values.rollout.scaleDownDelaySeconds }}
+      {{ end }}
+      abortScaleDownDelaySeconds: {{ .Values.rollout.abortScaleDownDelaySeconds }}
+      steps: {{- toYaml .Values.rollout.steps | nindent 8 }}
+      trafficRouting:
+        istio:
+          virtualService:
+            name: {{ .Values.name }}
+            routes:
+              - primary
+          destinationRule:
+            name: {{ .Values.name }}
+            stableSubsetName: stable
+            canarySubsetName: canary
+  replicas: {{ .Values.autoscaler.minReplicas }}
+  revisionHistoryLimit: {{ .Values.rollout.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+        version: "{{ .Values.version }}"
+        env: {{ .Values.environment }}
+        teamId: {{ .Values.metadata.owner.team.id }}
+      annotations:
+        proxy.istio.io/config: |
+          proxyMetadata:
+            ISTIO_META_DNS_CAPTURE: "true"
+            ISTIO_META_DNS_AUTO_ALLOCATE: "true"
+            ISTIO_META_IDLE_TIMEOUT: "0s"
+        {{- if .Values.traffic.interception.excludeInboundPorts.enabled }}
+        traffic.sidecar.istio.io/excludeInboundPorts: '{{ join "," .Values.traffic.interception.excludeInboundPorts.list }}'
+        {{ end }}
+        {{- if .Values.traffic.interception.excludeOutboundPorts.enabled }}
+        traffic.sidecar.istio.io/excludeOutboundPorts: '{{ join "," .Values.traffic.interception.excludeOutboundPorts.list }}'
+        {{ end }}
+        {{- if .Values.telemetry.prometheus.enabled }}
+        prometheus.io/scrape: 'true'
+        prometheus.io/path: '{{ .Values.telemetry.prometheus.path }}'
+        prometheus.io/port: '{{ .Values.telemetry.prometheus.port }}'
+        {{ end }}
+    spec:
+      serviceAccountName: {{ .Values.name }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      containers:
+        - name: {{ .Values.name }}
+          image: '{{ .Values.dockerRepositoryHost }}/{{ .Values.dockerRepository }}:{{ .Values.version }}'
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http-main-port
+              containerPort: {{ .Values.container.httpMainPort }}
+              protocol: TCP
+          {{- range $additionalPort := .Values.container.additionalPorts }}
+            - name: {{ $additionalPort.name }}
+              containerPort: {{ $additionalPort.containerPort }}
+              protocol: {{ $additionalPort.protocol }}
+          {{- end }}
+          securityContext:
+            {{- toYaml .Values.container.securityContext | nindent 12 }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            # Service defaults
+            - name: DEPLOY_VERSION
+              value: "{{ .Values.version }}"
+          {{- range $key, $val := .Values.container.env }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+          {{- end }}
+          {{- range $val := .Values.container.envSecret }}
+            - name: {{ $val.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $values.name }}
+                  key: {{ $val.name }}
+          {{- end }}
+          resources:
+            requests:
+              memory: {{ .Values.container.resources.requests.memory }}
+              cpu: {{ .Values.container.resources.requests.cpu }}
+              {{- if .Values.container.resources.requests.ephemeralStorage }}
+              ephemeral-storage: {{ .Values.container.resources.requests.ephemeralStorage }}
+              {{ end }}
+            limits:
+              memory: {{ .Values.container.resources.limits.memory }}
+              cpu: {{ .Values.container.resources.limits.cpu }}
+              {{- if .Values.container.resources.limits.ephemeralStorage }}
+              ephemeral-storage: {{ .Values.container.resources.limits.ephemeralStorage }}
+              {{ end }}
+          readinessProbe: {{- toYaml .Values.container.readinessProbe | nindent 12 }}
+          livenessProbe: {{- toYaml .Values.container.livenessProbe | nindent 12 }}
+          startupProbe: {{- toYaml .Values.container.startupProbe | nindent 12 }}
+          command:
+            {{ toYaml .Values.container.command | nindent 12 }}
+          args:
+            {{ toYaml .Values.container.args | nindent 12 }}

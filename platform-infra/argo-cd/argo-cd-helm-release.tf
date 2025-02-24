@@ -9,7 +9,7 @@ resource "helm_release" "argo_cd" {
   timeout          = 900
   values = [
     yamlencode({
-      "nameOverride": "argo-cd"
+      "nameOverride" : "argo-cd"
 
       ### Inspired by https://github.com/argoproj/argo-cd/issues/2784
       "dex" : {
@@ -152,7 +152,7 @@ resource "helm_release" "argo_cd" {
           "applicationsetcontroller.enable.new.git.file.globbing" : true
         }
         "cm" : {
-          "url" : "http://argo-cd.${var.environment}.localhost",
+          "url" : "http://argo-cd.${var.environment}.in.localhost",
           "timeout.reconciliation" : "60s",
           "application.resourceTrackingMethod" : "annotation+label",
           "exec.enabled" : true
@@ -247,7 +247,7 @@ resource "helm_release" "argo_cd" {
           }
         },
         {
-          "apiVersion" : "networking.istio.io/v1alpha3",
+          "apiVersion" : "networking.istio.io/v1",
           "kind" : "VirtualService",
           "metadata" : {
             "name" : "argo-cd",
@@ -255,7 +255,7 @@ resource "helm_release" "argo_cd" {
           },
           "spec" : {
             "hosts" : [
-              "argo-cd.${var.environment}.localhost"
+              "argo-cd.${var.environment}.in.localhost"
             ],
             "gateways" : [
               "istio-gateway-ingress/istio-gateway-ingress-main"

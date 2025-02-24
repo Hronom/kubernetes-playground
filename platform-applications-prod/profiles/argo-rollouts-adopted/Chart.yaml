@@ -1,0 +1,9 @@
+apiVersion: v2
+name: argo-rollouts-adopted
+description: Chart for adopted service
+version: 1.0.0
+
+dependencies:
+  - name: argo-rollouts
+    version: "2.38.2"
+    repository: "https://argoproj.github.io/argo-helm"

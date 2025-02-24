@@ -1,4 +1,6 @@
 name: temporal
-profile: temporal-custom
+profile: temporal-adopted
 namespace: temporal
 istio-injection: enabled
+
+host: 'temporal.prod.in.localhost'

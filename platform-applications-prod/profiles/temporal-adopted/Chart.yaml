@@ -1,6 +1,6 @@
 apiVersion: v2
-name: temporal-custom
-description: Chart for custom service
+name: temporal-adopted
+description: Chart for adopted service
 version: 1.0.0
 
 dependencies:

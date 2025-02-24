@@ -5,6 +5,7 @@ istio-injection: enabled
 
 externalServices:
   https:
+    - host: argoproj.github.io
     - host: charts.bitnami.com
     - host: go.temporal.io
     - host: repo.broadcom.com
@@ -12,3 +13,4 @@ externalServices:
     - host: auth.docker.io
     - host: production.cloudflare.docker.com
     - host: objects.githubusercontent.com
+    - host: kedacore.github.io
