@@ -1,9 +1,0 @@
-apiVersion: v2
-name: istio-gateway-config-custom
-description: Chart for custom service
-version: 1.0.0
-
-dependencies:
-  - name: raw
-    version: "2.0.0"
-    repository: "https://bedag.github.io/helm-charts/"

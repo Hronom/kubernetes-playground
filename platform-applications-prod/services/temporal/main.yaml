@@ -1,0 +1,4 @@
+name: temporal
+profile: temporal-custom
+namespace: temporal
+istio-injection: enabled

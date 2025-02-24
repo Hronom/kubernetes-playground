@@ -1,9 +1,0 @@
-apiVersion: v2
-name: istio-base-custom
-description: Chart for custom service
-version: 1.0.0
-
-dependencies:
-  - name: base
-    version: "1.24.0"
-    repository: "https://istio-release.storage.googleapis.com/charts"

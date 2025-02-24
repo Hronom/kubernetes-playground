@@ -1,0 +1,49 @@
+# -- Service name in kebab-case
+name: ""
+
+# -- List of allowed external(outside Kubernetes) services
+externalServices:
+  # -- http based external(outside Kubernetes) services
+  # @default -- `[]` (See [values.yaml])
+  http: []
+  #  - host: google.example.com
+  #    timeout: 30s
+  #    port: 80
+  #    resolution: DNS
+  # -- https based external(outside Kubernetes) services
+  # @default -- `[]` (See [values.yaml])
+  https: []
+  #  - host: google.example.com
+  #    port: 443
+  #    resolution: DNS
+  # -- grpc based external(outside Kubernetes) services
+  # @default -- `[]` (See [values.yaml])
+  grpc: []
+  #  - host: google.example.com
+  #    port: 5104
+  #    resolution: DNS
+  # -- http2 based external(outside Kubernetes) services
+  # @default -- `[]` (See [values.yaml])
+  http2: []
+  #  - host: google.example.com
+  #    timeout: 30s
+  #    port: 80
+  #    resolution: DNS
+  # -- mongo based external(outside Kubernetes) services
+  # @default -- `[]` (See [values.yaml])
+  mongo: []
+  #  - host: google.example.com
+  #    port: 5104
+  #    resolution: DNS
+  # -- tcp based external(outside Kubernetes) services
+  # @default -- `[]` (See [values.yaml])
+  tcp: []
+  #  - host: google.example.com
+  #    port: 3306
+  #    resolution: DNS
+  # -- tls based external(outside Kubernetes) services
+  # @default -- `[]` (See [values.yaml])
+  tls: []
+  #  - host: google.example.com
+  #    port: 3306
+  #    resolution: DNS

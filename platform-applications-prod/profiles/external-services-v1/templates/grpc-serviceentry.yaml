@@ -1,0 +1,18 @@
+{{- $name := .Values.name | default dict }}
+{{- range $val := .Values.externalServices.grpc }}
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: {{ $name }}-grpc-{{ $val.host | replace "*" "x" }}
+spec:
+  hosts:
+    - {{ $val.host | quote }}
+  location: MESH_EXTERNAL
+  ports:
+    - name: grpc
+      number: {{ $val.port }}
+      protocol: grpc
+  resolution: {{ $val.resolution | default "DNS" }}
+---
+{{- end }}
+
